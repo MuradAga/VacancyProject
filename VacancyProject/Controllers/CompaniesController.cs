@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using VacancyProject.Context;
 using VacancyProject.Entities;
 using VacancyProject.Models;
@@ -21,6 +22,45 @@ namespace VacancyProject.Controllers
         public IActionResult Get()
         {
             return Ok(_db.Companies.ToList());
+        }
+
+        [HttpGet("getCompanies")]
+        public IActionResult GetCompanies()
+        {
+            List<Company> companies = _db.Companies.ToList();
+            List<CompanyWithVacancyCount> companiesWithCount = new();
+            foreach (var company in companies)
+            {
+                CompanyWithVacancyCount companyWithCount = new();
+                companyWithCount.ProfileUrl = company.ProfileImage;
+                companyWithCount.Name = company.Name;
+                companyWithCount.VacancyCount = _db.Vacancies.Where(v => v.CompanyId == company.Id).Count();
+                companiesWithCount.Add(companyWithCount);
+            }
+            companiesWithCount = companiesWithCount.OrderByDescending(c => c.VacancyCount).ToList();
+            return Ok(companiesWithCount);
+        }
+
+        [HttpGet("getCompanies")]
+        public IActionResult GetTopFiveCompanies()
+        {
+            List<Company> companies = _db.Companies.ToList();
+            List<CompanyTopWithVacancyCount> companiesWithCount = new();
+            foreach (var company in companies)
+            {
+                CompanyTopWithVacancyCount companyWithCount = new();
+                companyWithCount.ProfileUrl = company.ProfileImage;
+                companyWithCount.VacancyCount = _db.Vacancies.Where(v => v.CompanyId == company.Id).Count();
+                companiesWithCount.Add(companyWithCount);
+            }
+            companiesWithCount = companiesWithCount.OrderByDescending(c => c.VacancyCount).Take(5).ToList();
+            return Ok(companiesWithCount);
+        }
+
+        [HttpGet("{text}")]
+        public IActionResult SearchCompanies(string text)
+        {
+            return Ok(_db.Companies.Where(c => c.Name.Contains(text)).ToList());
         }
 
         [HttpGet("{id}")]

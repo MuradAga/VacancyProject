@@ -22,6 +22,12 @@ namespace VacancyProject.Controllers
             return Ok(_db.SubCategories.ToList());
         }
 
+        [HttpGet]
+        public IActionResult GetByCategoryId(int categoryId)
+        {
+            return Ok(_db.SubCategories.Where(sc => sc.CategoryId == categoryId));
+        }
+
         [HttpPost]
         public void Post(int categoryId, string name)
         {
